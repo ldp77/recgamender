@@ -1,4 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>Index Page</h1>
+    <form action="" method="post">
+        {{form.hidden_tag()}}
+        <fieldset class="form-group">
+            <div class="form-group">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </fieldset>
+    </form>
 {% endblock content %}
