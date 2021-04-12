@@ -1,0 +1,5 @@
+app.py: Main file that runs the code for the app
+
+requirements.txt: specifies packages needed to run the app
+
+Procfile: Tells Heroku how to deploy the app
