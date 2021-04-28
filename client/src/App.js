@@ -100,11 +100,6 @@ export class App extends Component {
         >
           Recgamenders
         </div>
-        <IntroPage
-          updateClicked={this.updateGames}
-          nextClicked={this.nextClicked}
-          games={this.state.games}
-        ></IntroPage>
         {this.state.clicked.length ? (
           <React.Fragment>
             <div style={body_style}>
@@ -125,7 +120,11 @@ export class App extends Component {
             ></Recommended>
           </React.Fragment>
         ) : (
-          <span></span>
+          <IntroPage
+            updateClicked={this.updateGames}
+            nextClicked={this.nextClicked}
+            games={this.state.games}
+          ></IntroPage>
         )}
       </div>
     );
@@ -145,6 +144,7 @@ const body_style = {
   textAlign: "center",
   padding: "10%",
   borderRadius: "1em",
+  marginTop: "2em",
   boxShadow: "0px 2px 8px 0px rgba(99, 99, 99, 0.2)",
 };
 
