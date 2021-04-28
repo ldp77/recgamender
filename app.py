@@ -14,6 +14,8 @@ app.config['SECRET_KEY'] = '4da3ad463de4a2b60095e5b0'
 
 global new_dictionary_miscellaneous
 global model
+global data_df
+global sparse_user_item
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -48,6 +50,18 @@ def title(_id):
 
     return json.dumps(output)
 
+@app.route('/rankings/<id_string>')
+def rankings(id_string):
+    ids = id_string.split('_')
+    r = get_recommendations_new_user_feedback(data_df=data_df, feedback_array=ids)
+    dg = get_different_genre_rank(r, new_dictionary_miscellaneous)
+    recommended_ids = [str(item[0]) for item in dg]
+    return json.dumps(recommended_ids)
+
+@app.route('/user_rankings/<user_id>')
+def user_rankings(user_id):
+    recommended = model.recommend(user_id, sparse_user_item, 50)
+    return str(recommended)
 
 # Placeholder for model training code
 # new_dictionary_miscellaneous = {
@@ -213,6 +227,83 @@ if __name__ == '__main__':
         description = new_dictionary_miscellaneous[game][3]
         price = new_dictionary_miscellaneous[game][4]
         #print(name,url,genre,price,description)
+
+    def get_recommendations_new_user_feedback(data_df,feedback_array):
+        new_id = data_df['UserID'].unique()[-1] + 1
+        for game in feedback_array:
+            tmp_df = pd.DataFrame([[new_id, game, 1]], columns=["UserID","GameID","Behavior"])
+            data_df = data_df.append(tmp_df, ignore_index=True)
+        # First, generate dictionaries for mapping old id to new id for users and games
+        unique_GameID = data_df['GameID'].unique()
+        unique_UserID = data_df['UserID'].unique()
+        j = 0
+        user_old2new_id_dict = dict()
+        for u in unique_UserID:
+            user_old2new_id_dict[u] = j #map old id to new id
+            j += 1
+        j = 0
+        game_old2new_id_dict = dict()
+        for i in unique_GameID:
+            game_old2new_id_dict[i] = j #map game_name to numeric id
+            j += 1
+
+        # Then, use the generated dictionaries to reindex UserID and GameID in the data_df
+        user_list = data_df['UserID'].values
+        game_list = data_df['GameID'].values
+        #print(data_df.head())
+        for j in range(len(data_df)):
+            user_list[j] = user_old2new_id_dict[user_list[j]]
+            game_list[j] = game_old2new_id_dict[game_list[j]]
+        data_df['UserID'] = user_list
+        data_df['GameID'] = game_list
+        #print(data_df.head())
+
+        # generate train_df with 70% samples and test_df with 30% samples, and there should have no overlap between them.
+        #train_index = np.random.random(len(data_df)) <= 0.7
+        #train_df = data_df[train_index]
+        train_df = data_df
+        #test_df = data_df[~train_index]
+
+        # generate train_mat and test_mat
+        num_user = len(data_df['UserID'].unique())
+        num_game = len(data_df['GameID'].unique())
+
+        train_mat = sparse.coo_matrix((train_df['Behavior'].values, (train_df['UserID'].values, train_df['GameID'].values)), shape=(num_user, num_game)).astype(float)
+
+        train_mat = (train_mat > 0).astype(float)
+
+        # Create a numeric user_id and artist_id column
+        data_df['UserID'] = data_df['UserID'].astype("category").cat.codes
+        data_df['GameID'] = data_df['GameID'].astype("category").cat.codes
+
+
+        # The implicit library expects data as a item-user matrix so we
+        # create two matricies, one for fitting the model (item-user)
+        # and one for recommendations (user-item)
+        sparse_item_user = sparse.csr_matrix((train_df['Behavior'].values, (train_df['GameID'].values, train_df['UserID'].values)), shape=(num_game,num_user)).astype(float)
+        sparse_user_item = sparse.csr_matrix((train_df['Behavior'].values, (train_df['UserID'].values, train_df['GameID'].values)), shape=(num_user, num_game)).astype(float)
+
+        # Initialize the bpr model and fit it using the sparse item-user matrix
+        model = implicit.bpr.BayesianPersonalizedRanking(factors=63,learning_rate = 0.01 ,regularization=0.001, iterations=20)
+        #model = implicit.als.AlternatingLeastSquares(factors=20, regularization=0.1, iterations=20)
+
+        # Calculate the confidence by multiplying it by our alpha value.
+        alpha_val = 15
+        data_conf = (sparse_item_user * alpha_val).astype('double')
+
+        data_conf = (sparse_item_user)
+
+        #Fit the model
+        model.fit(data_conf)
+
+        # Provide item id and number of wanted items
+        # game_old2new_id_dict maps from title to GameID. i.e., {'Fallout 4': 0 ....
+        user_id = new_id
+        n_similar = 70
+        recommended = model.recommend(user_id, sparse_user_item,n_similar)
+        new_games = get_different_genre_rank(recommended,new_dictionary_miscellaneous)
+
+        return(new_games)
 
 
     app.run(threaded=True, port=5000)
