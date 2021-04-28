@@ -90,9 +90,16 @@ export class App extends Component {
   render() {
     return (
       <div>
-        <h2 style={{ ...title_style, textAlign: "center", marginTop: "2em" }}>
+        <div
+          style={{
+            ...title_style,
+            textAlign: "center",
+            marginTop: "2em",
+            marginBottom: "0",
+          }}
+        >
           Recgamenders
-        </h2>
+        </div>
         <IntroPage
           updateClicked={this.updateGames}
           nextClicked={this.nextClicked}

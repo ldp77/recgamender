@@ -75,6 +75,7 @@ export default IntroPage;
 
 const body_style = {
   margin: "20%",
+  marginTop: "2em",
   textAlign: "center",
   padding: "10%",
   borderRadius: "1em",
