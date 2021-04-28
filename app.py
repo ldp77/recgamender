@@ -27,9 +27,13 @@ def topten():
         output.append(desired_info)
     return json.dumps(output)
 
-@app.route('/related/<id_string>', methods=['GET'])
-def related():
-    pass
+@app.route('/title/<_id>', methods=['GET'])
+def title(_id):
+    game_info = new_dictionary_miscellaneous[int(_id)]
+    output = {"id": _id, "name": game_info[0]}
+
+    return json.dumps(output)
+
 
 # Placeholder for model training code
 new_dictionary_miscellaneous = {
