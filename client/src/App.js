@@ -21,25 +21,46 @@ export class App extends Component {
 
   updateGames = async (id) => {
     console.log(id);
-    this.state.games.forEach((el) => {
-      if (el.id == id) {
-        if (el.related.length > 0) {
-          el.related.forEach(
-            async (el) =>
-              await fetch("/titles/" + el.id)
-                .then((resp) => {
-                  console.log(resp);
-                  return resp;
-                })
-                .then((resp) => resp.json())
-                .then((json) => {
-                  console.log("hosy");
-                  console.log(json);
-                })
-          );
-        }
-      }
-    });
+    const els = this.state.games.filter(
+      (el) => el.id == id && el.related.length > 0
+    );
+    if (els.length == 0) {
+      console.log("error: length == 0");
+      return;
+    }
+    console.log("howdy");
+    console.log(els);
+    const el = els[0];
+    for (let relatedid of el.related) {
+      await fetch("/title/" + relatedid)
+        .then((resp) => {
+          console.log(resp);
+          return resp;
+        })
+        .then((resp) => resp.json())
+        .then((json) => {
+          console.log(("json: ", json));
+
+          for (let game of this.state.games) {
+            console.log(game.id, json.id);
+            if (game.id == json.id) {
+              console.log("really?");
+              return;
+            }
+          }
+          console.log("howdyyyy");
+          this.setState((prev) => {
+            console.log("called");
+            return {
+              games: [
+                ...prev.games,
+                { id: json.id, name: json.name, related: [] },
+              ],
+            };
+          });
+          console.log("set_state,", json);
+        });
+    }
   };
 
   nextClicked = (clicked) => {
@@ -50,9 +71,7 @@ export class App extends Component {
       <div>
         {" "}
         <IntroPage
-          updateClicked={(title) => {
-            this.updateGames(title);
-          }}
+          updateClicked={this.updateGames}
           nextClicked={this.nextClicked}
           games={this.state.games}
         ></IntroPage>
