@@ -8,10 +8,10 @@ export class App extends Component {
     super();
     this.state = {
       games: [],
+      recomendations: [],
     };
   }
   async componentDidMount() {
-    console.log("here");
     await fetch("/games", {
       mode: "no-cors",
     })
@@ -28,8 +28,6 @@ export class App extends Component {
       console.log("error: length == 0");
       return;
     }
-    console.log("howdy");
-    console.log(els);
     const el = els[0];
     for (let relatedid of el.related) {
       await fetch("/title/" + relatedid)
@@ -39,8 +37,6 @@ export class App extends Component {
         })
         .then((resp) => resp.json())
         .then((json) => {
-          console.log(("json: ", json));
-
           for (let game of this.state.games) {
             console.log(game.id, json.id);
             if (game.id == json.id) {
@@ -58,13 +54,29 @@ export class App extends Component {
               ],
             };
           });
-          console.log("set_state,", json);
         });
     }
   };
 
-  nextClicked = (clicked) => {
-    console.log(clicked);
+  nextClicked = async (clicked) => {
+    console.log(clicked.join("_"));
+    await fetch("/rankings/" + clicked.join("_"))
+      .then((resp) => resp.json())
+      .then((json) => {
+        return Promise.all(
+          json.map(async (id) => {
+            return fetch("/info/" + id)
+              .then((resp) => resp.json())
+              .then((json) => {
+                this.setState({
+                  recomendations: [...this.state.recomendations, json],
+                });
+                return json;
+              });
+          })
+        );
+      });
+    window.location.href = "/#reccomended";
   };
   render() {
     return (
@@ -76,15 +88,8 @@ export class App extends Component {
           games={this.state.games}
         ></IntroPage>
         <Recommended
-          games={[
-            {
-              title: "hoi4",
-              description: "HOI4 is a strategy game",
-              genre: "grand strategy",
-              steamlink:
-                "https://store.steampowered.com/app/394360/Hearts_of_Iron_IV/",
-            },
-          ]}
+          id="recommended"
+          games={this.state.recomendations}
         ></Recommended>
       </div>
     );

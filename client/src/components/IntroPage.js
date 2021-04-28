@@ -25,7 +25,6 @@ export class IntroPage extends Component {
   };
   render() {
     let games = [];
-    console.log(this.props.games);
     for (let game of this.props.games) {
       games.push(
         <Game
@@ -52,7 +51,7 @@ export class IntroPage extends Component {
         }}
         onClick={() => {
           if (this.state.clicked.size >= 6)
-            this.props.nextClicked(this.state.clicked);
+            this.props.nextClicked([...this.state.clicked]);
         }}
       >
         next

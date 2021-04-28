@@ -4,14 +4,17 @@ export class Recommended extends Component {
   render() {
     return (
       <div style={body_style}>
-        {this.props.games.map((game) => (
-          <GameCard
-            title={game.title}
-            steamlink={game.steamlink}
-            genre={game.genre}
-            description={game.description}
-          ></GameCard>
-        ))}
+        {this.props.games.map((game) => {
+          return (
+            <GameCard
+              title={game.name}
+              steamlink={game.steamlink}
+              genre={game.genre}
+              description={game.description}
+              key={game.id}
+            ></GameCard>
+          );
+        })}
       </div>
     );
   }
