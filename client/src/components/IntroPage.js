@@ -25,14 +25,15 @@ export class IntroPage extends Component {
   };
   render() {
     let games = [];
-    for (let title of this.props.games.keys()) {
+    console.log(this.props.games);
+    for (let game of this.props.games) {
       games.push(
         <Game
-          updateClicked={(title) => {
-            this.updateClicked(title);
+          updateClicked={(id) => {
+            this.updateClicked(id);
           }}
-          game={{ title: title }}
-          key={title}
+          game={{ title: game.name, id: game.id }}
+          key={game.id}
         ></Game>
       );
     }

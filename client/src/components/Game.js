@@ -20,7 +20,7 @@ export class Game extends Component {
         }}
         onClick={() => {
           this.setState((prev) => {
-            this.props.updateClicked(this.props.game.title);
+            this.props.updateClicked(this.props.game.id);
 
             return { ...prev, selected: !prev.selected };
           });

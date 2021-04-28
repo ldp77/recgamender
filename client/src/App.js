@@ -2,56 +2,43 @@
 // import './App.css';
 import React, { Component } from "react";
 import IntroPage from "./components/IntroPage";
-
+import Recommended from "./components/Recommended";
 export class App extends Component {
   constructor(props) {
     super();
     this.state = {
-      games: new Map(),
+      games: [],
     };
-    this.state.games.set("HOI4", ["civ6", "civ 5"]);
-    this.state.games.set("city skylines", ["simcity"]);
-    this.state.games.set("civ5", ["civ 4", "civ 3", "civ 6"]);
+  }
+  async componentDidMount() {
+    console.log("here");
+    await fetch("/games", {
+      mode: "no-cors",
+    })
+      .then((resp) => resp.json())
+      .then((data) => this.setState({ games: data }));
   }
 
-  updateGames = (title) => {
-    if (!this.state.games.has(title)) {
-      let cpy = new Map(this.state.games);
-      cpy.set(title, []);
-      this.setState(() => {
-        return {
-          games: cpy,
-        };
-      });
-    }
-    if (this.state.games.get(title).length == 0) {
-      setTimeout(() => {
-        let cpy = new Map(this.state.games);
-        cpy.set(title, ["a", "b", "c"]);
-        this.setState((prev) => {
-          prev.games.set(title, ["a", "b", "c"]);
-          return prev;
-        });
-
-        let adj = this.state.games.get(title);
-        let to_add = adj.filter((el) => !this.state.games.has(el));
-        this.setState((prev) => {
-          to_add.forEach((el) => {
-            prev.games.set(el, []);
-          });
-          return prev;
-        });
-      }, 800);
-      return;
-    }
-
-    let adj = this.state.games.get(title);
-    let to_add = adj.filter((el) => !this.state.games.has(el));
-    this.setState((prev) => {
-      to_add.forEach((el) => {
-        prev.games.set(el, []);
-      });
-      return prev;
+  updateGames = async (id) => {
+    console.log(id);
+    this.state.games.forEach((el) => {
+      if (el.id == id) {
+        if (el.related.length > 0) {
+          el.related.forEach(
+            async (el) =>
+              await fetch("/titles/" + el.id)
+                .then((resp) => {
+                  console.log(resp);
+                  return resp;
+                })
+                .then((resp) => resp.json())
+                .then((json) => {
+                  console.log("hosy");
+                  console.log(json);
+                })
+          );
+        }
+      }
     });
   };
 
@@ -60,13 +47,27 @@ export class App extends Component {
   };
   render() {
     return (
-      <IntroPage
-        updateClicked={(title) => {
-          this.updateGames(title);
-        }}
-        nextClicked={this.nextClicked}
-        games={this.state.games}
-      ></IntroPage>
+      <div>
+        {" "}
+        <IntroPage
+          updateClicked={(title) => {
+            this.updateGames(title);
+          }}
+          nextClicked={this.nextClicked}
+          games={this.state.games}
+        ></IntroPage>
+        <Recommended
+          games={[
+            {
+              title: "hoi4",
+              description: "HOI4 is a strategy game",
+              genre: "grand strategy",
+              steamlink:
+                "https://store.steampowered.com/app/394360/Hearts_of_Iron_IV/",
+            },
+          ]}
+        ></Recommended>
+      </div>
     );
   }
 }
