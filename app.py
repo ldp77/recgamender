@@ -58,10 +58,18 @@ def rankings(id_string):
     recommended_ids = [str(item[0]) for item in dg]
     return json.dumps(recommended_ids)
 
-@app.route('/user_rankings/<user_id>')
-def user_rankings(user_id):
-    recommended = model.recommend(user_id, sparse_user_item, 50)
-    return str(recommended)
+@app.route('/info/<_id>')
+def info(_id):
+    game_info = new_dictionary_miscellaneous[int(_id)]
+    output = {
+        "id": _id,
+        "name": game_info[0],
+        "steamlink": game_info[1],
+        "genre": game_info[2],
+        "description": game_info[3]
+    }
+
+    return json.dumps(output)
 
 # Placeholder for model training code
 # new_dictionary_miscellaneous = {
