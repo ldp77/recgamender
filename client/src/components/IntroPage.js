@@ -29,9 +29,7 @@ export class IntroPage extends Component {
     for (let game of this.props.games) {
       games.push(
         <Game
-          updateClicked={(id) => {
-            this.updateClicked(id);
-          }}
+          updateClicked={this.updateClicked}
           game={{ title: game.name, id: game.id }}
           key={game.id}
         ></Game>

@@ -19,9 +19,8 @@ export class Game extends Component {
           this.setState({ hovered: false });
         }}
         onClick={() => {
+          this.props.updateClicked(this.props.game.id);
           this.setState((prev) => {
-            this.props.updateClicked(this.props.game.id);
-
             return { ...prev, selected: !prev.selected };
           });
         }}
