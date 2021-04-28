@@ -3,11 +3,13 @@
 import React, { Component } from "react";
 import IntroPage from "./components/IntroPage";
 import Recommended from "./components/Recommended";
+import PickedGame from "./components/PickedGame";
 export class App extends Component {
   constructor(props) {
     super();
     this.state = {
       games: [],
+      clicked: [],
       recomendations: [],
     };
   }
@@ -20,7 +22,6 @@ export class App extends Component {
   }
 
   updateGames = async (id) => {
-    console.log(id);
     const els = this.state.games.filter((el) => el.id == id);
     if (els.length == 0) {
       console.log("error: length == 0");
@@ -36,14 +37,9 @@ export class App extends Component {
     }
     for (let relatedid of el.related) {
       await fetch("/title/" + relatedid)
-        .then((resp) => {
-          console.log(resp);
-          return resp;
-        })
         .then((resp) => resp.json())
         .then((json) => {
           for (let game of this.state.games) {
-            console.log(game.id, json.id);
             if (game.id == json.id) {
               console.log("really?");
               return;
@@ -62,6 +58,16 @@ export class App extends Component {
   };
 
   nextClicked = async (clicked) => {
+    await Promise.all(
+      clicked.map((id) => {
+        return fetch("info/" + id)
+          .then((resp) => resp.json())
+          .then((json) => {
+            this.setState({ clicked: [...this.state.clicked, json] });
+          });
+      })
+    );
+
     console.log(clicked.join("_"));
     await fetch("/rankings/" + clicked.join("_"))
       .then((resp) => resp.json())
@@ -71,29 +77,49 @@ export class App extends Component {
             return fetch("/info/" + id)
               .then((resp) => resp.json())
               .then((json) => {
-                this.setState({
-                  recomendations: [...this.state.recomendations, json],
-                });
+                if (this.state.games.filter((game) => json.id == game.id) == 0)
+                  this.setState({
+                    recomendations: [...this.state.recomendations, json],
+                  });
                 return json;
               });
           })
         );
       });
-    window.location.href = "/#reccomended";
   };
   render() {
     return (
       <div>
-        {" "}
+        <h2 style={{ ...title_style, textAlign: "center", marginTop: "2em" }}>
+          Recgamenders
+        </h2>
         <IntroPage
           updateClicked={this.updateGames}
           nextClicked={this.nextClicked}
           games={this.state.games}
         ></IntroPage>
-        <Recommended
-          id="recommended"
-          games={this.state.recomendations}
-        ></Recommended>
+        {this.state.clicked.length ? (
+          <React.Fragment>
+            <div style={body_style}>
+              <span style={title_style}>You Selected</span>
+              <div style={cont_style}>
+                {this.state.clicked.map((el) => (
+                  <PickedGame
+                    title={el.name}
+                    genre={el.genre}
+                    id={el.id}
+                  ></PickedGame>
+                ))}
+              </div>
+            </div>
+            <Recommended
+              id="recommended"
+              games={this.state.recomendations}
+            ></Recommended>
+          </React.Fragment>
+        ) : (
+          <span></span>
+        )}
       </div>
     );
   }
@@ -101,26 +127,21 @@ export class App extends Component {
 
 export default App;
 
-// c
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
+const cont_style = {
+  display: "flex",
+  alignContent: "space-between",
+  flexWrap: "wrap",
+};
 
-// export default App;
+const body_style = {
+  margin: "20%",
+  textAlign: "center",
+  padding: "10%",
+  borderRadius: "1em",
+  boxShadow: "0px 2px 8px 0px rgba(99, 99, 99, 0.2)",
+};
+
+const title_style = {
+  marginBottom: "1em",
+  fontSize: "2em",
+};

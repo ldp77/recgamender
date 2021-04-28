@@ -4,6 +4,8 @@ export class Recommended extends Component {
   render() {
     return (
       <div style={body_style}>
+        <span style={title_style}> We recommend</span>
+
         {this.props.games.map((game) => {
           return (
             <GameCard
@@ -28,4 +30,9 @@ const body_style = {
   padding: "10%",
   borderRadius: "1em",
   boxShadow: "0px 2px 8px 0px rgba(99, 99, 99, 0.2)",
+};
+
+const title_style = {
+  marginBottom: "1em",
+  fontSize: "2em",
 };
