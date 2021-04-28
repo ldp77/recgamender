@@ -29,10 +29,15 @@ def topten():
     games = {k: new_dictionary_miscellaneous[k] for k in ids}
     output = []
     for id, game_info in games.items():
+
+        related = list(model.similar_items(id, 4))
+        related = [str(id) for id, similarity in related[1:]]
+
         desired_info = {
             "name": game_info[0],
-            "related": []
+            "related": related
         }
+
         output.append(desired_info)
     return json.dumps(output)
 
