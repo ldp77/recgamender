@@ -2,18 +2,26 @@
 // import './App.css';
 import React, { Component } from "react";
 import IntroPage from "./components/IntroPage";
-
+import Recommended from "./components/Recommended";
 export class App extends Component {
   constructor(props) {
     super();
     this.state = {
-      games: new Map(),
+      games: new Set(),
     };
-    this.state.games.set("HOI4", ["civ6", "civ 5"]);
-    this.state.games.set("city skylines", ["simcity"]);
-    this.state.games.set("civ5", ["civ 4", "civ 3", "civ 6"]);
   }
-
+  async componentDidMount() {
+    await fetch("http://localhost:5000/games")
+      .then((resp) => {
+        console.log(resp);
+        return resp.json();
+      })
+      .then((json) => {
+        console.log("howdy");
+        console.log(json);
+        this.setState({ games: new Set(json) });
+      });
+  }
   updateGames = (title) => {
     if (!this.state.games.has(title)) {
       let cpy = new Map(this.state.games);
@@ -60,13 +68,27 @@ export class App extends Component {
   };
   render() {
     return (
-      <IntroPage
-        updateClicked={(title) => {
-          this.updateGames(title);
-        }}
-        nextClicked={this.nextClicked}
-        games={this.state.games}
-      ></IntroPage>
+      <div>
+        {" "}
+        <IntroPage
+          updateClicked={(title) => {
+            this.updateGames(title);
+          }}
+          nextClicked={this.nextClicked}
+          games={this.state.games}
+        ></IntroPage>
+        <Recommended
+          games={[
+            {
+              title: "hoi4",
+              description: "HOI4 is a strategy game",
+              genre: "grand strategy",
+              steamlink:
+                "https://store.steampowered.com/app/394360/Hearts_of_Iron_IV/",
+            },
+          ]}
+        ></Recommended>
+      </div>
     );
   }
 }

@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 from forms import TestForm
 import json
 import random
@@ -19,7 +19,8 @@ global sparse_user_item
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html', form=TestForm())
+    return send_from_directory("html", "./client/public/index.html")
+#     return render_template('index.html', form=TestForm())
 
 
 #GET TOP TEN
