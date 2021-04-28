@@ -9,6 +9,7 @@ export class GameCard extends Component {
           steam
         </a>
         <br />
+        <br />
         genres: {this.props.genre}
         <br />
         <br />

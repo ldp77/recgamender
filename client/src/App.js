@@ -21,14 +21,19 @@ export class App extends Component {
 
   updateGames = async (id) => {
     console.log(id);
-    const els = this.state.games.filter(
-      (el) => el.id == id && el.related.length > 0
-    );
+    const els = this.state.games.filter((el) => el.id == id);
     if (els.length == 0) {
       console.log("error: length == 0");
       return;
     }
     const el = els[0];
+    if (el.related.length == 0) {
+      await fetch("/related/" + el.id)
+        .then((resp) => resp.json())
+        .then((json) => {
+          el.related = json;
+        });
+    }
     for (let relatedid of el.related) {
       await fetch("/title/" + relatedid)
         .then((resp) => {
@@ -44,9 +49,7 @@ export class App extends Component {
               return;
             }
           }
-          console.log("howdyyyy");
           this.setState((prev) => {
-            console.log("called");
             return {
               games: [
                 ...prev.games,
