@@ -69,6 +69,13 @@ def info(_id):
 
     return json.dumps(output)
 
+@app.route('/related/<_id>')
+def related(_id):
+    r = list(model.similar_items(int(_id), 4))
+    r = [str(item[0]) for item in r[1:]]
+
+    return json.dumps(r)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
