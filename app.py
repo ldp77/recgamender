@@ -17,17 +17,12 @@ global model
 global data_df
 global sparse_user_item
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    return send_from_directory("html", "./client/public/index.html")
-#     return render_template('index.html', form=TestForm())
-
-
 #GET TOP TEN
 #returns json of top ten movies
 #in form of [{"name": "thename", "related": ["civ6", "civ5", "civ4"]}]
 @app.route('/games', methods=['GET'])
 def topten():
+    print("here")
     ids = range(10)
     games = {k: new_dictionary_miscellaneous[k] for k in ids}
     output = []
@@ -37,11 +32,13 @@ def topten():
         related = [str(id) for id, similarity in related[1:]]
 
         desired_info = {
+            "id": id,
             "name": game_info[0],
             "related": related
         }
 
         output.append(desired_info)
+    print(output)
     return json.dumps(output)
 
 @app.route('/title/<_id>', methods=['GET'])
@@ -63,6 +60,26 @@ def rankings(id_string):
 def user_rankings(user_id):
     recommended = model.recommend(user_id, sparse_user_item, 50)
     return str(recommended)
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    return send_from_directory("./client/build", "index.html")
+#     return render_template('index.html', form=TestForm())
+
+
+
+@app.route('/<path:filename>')
+def static_build(filename):
+    return send_from_directory("./client/build", filename)
+
+@app.route('/static/js/<path:filename>')
+def static_js(filename):
+    return send_from_directory("./client/build/static/js", filename)
+
+@app.route('/static/css/<path:filename>')
+def static_css(filename):
+    return send_from_directory("./client/build/static/css", filename)
 
 # Placeholder for model training code
 # new_dictionary_miscellaneous = {
